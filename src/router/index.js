@@ -1,45 +1,55 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
+import Home from '../views/Home.vue'
+import Settings from '../views/Settings.vue'
+import Achievements from '../views/Achievements.vue'
+import Skills from '../views/Skills.vue'
+import Shop from '../views/Shop.vue'
+import DailyTasks from '../views/DailyTasks.vue'
+import Notifications from '../views/Notifications.vue'
+import Pets from '../views/Pets.vue'
+
+// 定义路由
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: import('../views/Home.vue')
+    component: Home
   },
   {
     path: '/setting',
     name: 'Setting',
-    component: import('../views/Settings.vue')
+    component: Settings
   },
   {
     path: '/achievements',
     name: 'Achievements',
-    component: import('../views/Achievements.vue')
+    component: Achievements
   },
   {
     path: '/skills',
     name: 'Skills',
-    component: import('../views/Skills.vue')
+    component: Skills
   },
   {
     path: '/shop',
     name: 'Shop',
-    component: import('../views/Shop.vue')
+    component: Shop
   },
   {
     path: '/daily-tasks',
     name: 'DailyTasks',
-    component: import('../views/DailyTasks.vue')
+    component: DailyTasks
   },
   {
     path: '/notifications',
     name: 'Notifications',
-    component: import('../views/Notifications.vue')
+    component: Notifications
   },
   {
     path: '/pets',
     name: 'Pets',
-    component: import('../views/Pets.vue')
+    component: Pets
   }
 ]
 
