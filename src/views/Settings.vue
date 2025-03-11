@@ -120,6 +120,7 @@ onMounted(() => {
         <van-button icon="arrow-left" size="small" @click="router.go(-1)">返回</van-button>
       </div>
     </div>
+    <van-notice-bar left-icon="volume-o" text="本游戏为开源项目，如果您在任何地方通过付费方式购买了本游戏，请及时退款并投诉举报。" />
     <div class="settings-content">
       <van-cell-group inset title="基本设置">
         <van-cell title="深色模式">
@@ -131,14 +132,27 @@ onMounted(() => {
       <van-cell-group inset title="数据管理">
         <van-cell title="导出游戏数据" label="将游戏数据导出为JSON文件备份">
           <template #right-icon>
-            <van-button size="small" type="primary" @click="exportGameData">导出</van-button>
+            <van-button size="small" type="warning" @click="exportGameData">导出</van-button>
           </template>
         </van-cell>
         <van-cell title="导入游戏数据" label="从备份文件恢复游戏数据">
           <template #right-icon>
-            <van-uploader accept=".json" :after-read="handleFileSelect" :max-count="1" :show-upload="false" :preview-image="false">
-              <van-button size="small" type="warning">导入</van-button>
+            <van-uploader accept=".json" :after-read="handleFileSelect" :max-count="1" :show-upload="false"
+              :preview-image="false">
+              <van-button size="small" type="danger">导入</van-button>
             </van-uploader>
+          </template>
+        </van-cell>
+      </van-cell-group>
+      <van-cell-group inset title="其他管理">
+        <van-cell title="项目地址" label="https://github.com/setube/vue-idle-game">
+          <template #right-icon>
+            <van-button size="small" url="https://github.com/setube/vue-idle-game" type="success">访问</van-button>
+          </template>
+        </van-cell>
+        <van-cell title="官方QQ群" label="920930589">
+          <template #right-icon>
+            <van-button size="small" url="https://qm.qq.com/q/NlsfYKVWgy" type="primary">加入</van-button>
           </template>
         </van-cell>
       </van-cell-group>

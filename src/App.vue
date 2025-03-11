@@ -78,4 +78,7 @@ body {
 .van-swipe-cell__right .van-button--square {
   height: 100%;
 }
+.van-notice-bar {
+  border-radius: var(--van-cell-group-inset-radius);
+}
 </style>
