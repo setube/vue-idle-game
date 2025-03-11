@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAchievementStore } from '../stores/achievements'
 import { showToast } from 'vant'
@@ -105,7 +105,6 @@ onMounted(() => {
           </div>
         </van-tab>
         <van-tab title="已完成">
-          <!-- 已完成成就部分保持不变 -->
           <div class="achievement-list" v-if="completedAchievements.length > 0">
             <van-cell-group inset v-for="achievement in completedAchievements" :key="achievement.id">
               <van-cell :title="achievement.name" :icon="achievement.icon">

@@ -15,7 +15,7 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
     {
       id: 'daily_gold',
       name: '收集金币',
-      description: '今日收集{target}金币',
+      description: '收集{target}金币',
       type: 'gold_collect',
       minLevel: 1,
       baseTarget: 50, // 基础目标值
@@ -26,7 +26,7 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
     {
       id: 'daily_tasks',
       name: '完成任务',
-      description: '今日完成{target}个任务',
+      description: '完成{target}个任务',
       type: 'complete_tasks',
       minLevel: 1,
       baseTarget: 3,
@@ -37,7 +37,7 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
     {
       id: 'daily_energy',
       name: '消耗体力',
-      description: '今日消耗{target}点体力',
+      description: '消耗{target}点体力',
       type: 'spend_energy',
       minLevel: 2,
       baseTarget: 30,
@@ -48,7 +48,7 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
     {
       id: 'daily_mining',
       name: '采集资源',
-      description: '今日完成{target}次采集资源任务',
+      description: '完成{target}次采集资源任务',
       type: 'specific_task',
       taskId: 1,
       minLevel: 1,
@@ -60,7 +60,7 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
     {
       id: 'daily_explore',
       name: '探索地图',
-      description: '今日完成{target}次探索地图任务',
+      description: '完成{target}次探索地图任务',
       type: 'specific_task',
       taskId: 2,
       minLevel: 5,
@@ -72,7 +72,7 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
     {
       id: 'daily_combat',
       name: '击败怪物',
-      description: '今日完成{target}次击败怪物任务',
+      description: '完成{target}次击败怪物任务',
       type: 'specific_task',
       taskId: 3,
       minLevel: 10,
@@ -99,9 +99,7 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
   const initialize = async () => {
     await loadDailyTasks()
     // 检查是否需要刷新每日任务
-    if (shouldRefreshDailyTasks()) {
-      await generateDailyTasks()
-    }
+    if (shouldRefreshDailyTasks()) await generateDailyTasks()
   }
   // 检查是否需要刷新每日任务
   const shouldRefreshDailyTasks = () => {
@@ -125,10 +123,8 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
     dailyTasks.value = []
     // 根据玩家等级筛选可用任务模板
     const availableTemplates = taskTemplates.filter(template => template.minLevel <= playerLevel)
-
     // 随机选择3个任务
     const selectedTemplates = getRandomTasks(availableTemplates, 3)
-
     // 生成新任务
     selectedTemplates.forEach(template => {
       // 根据玩家等级计算目标值

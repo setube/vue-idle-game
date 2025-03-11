@@ -46,7 +46,10 @@ export const usePetStore = defineStore('pets', () => {
   // 加载宠物数据
   const loadPets = async () => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION)
+      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
+        // 确保pets对象存储存在
+        if (!db.objectStoreNames.contains('pets')) db.createObjectStore('pets', { keyPath: 'id' })
+      })
       const petData = await db.getAll('pets')
       if (petData && petData.length > 0) {
         pets.value = petData
@@ -62,7 +65,10 @@ export const usePetStore = defineStore('pets', () => {
   // 保存宠物数据
   const savePets = async () => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION)
+      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
+        // 确保pets对象存储存在
+        if (!db.objectStoreNames.contains('pets')) db.createObjectStore('pets', { keyPath: 'id' })
+      })
       const tx = db.transaction('pets', 'readwrite')
       // 清空现有数据
       tx.objectStore('pets').clear()

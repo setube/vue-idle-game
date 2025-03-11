@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useSkillStore } from '../stores/skills'
@@ -78,27 +78,23 @@ const applySystemEffect = (callback, errorMessage) => {
 // 计算任务实际体力消耗
 const calculateEnergyCost = (task) => {
   let actualEnergyCost = task.energyCost
-  
   // 应用技能体力消耗减少
   const skillEffect = applySystemEffect(
     () => skillStore.applySkillsToEnergyCost(task),
     '技能系统未加载或应用失败'
   )
   if (skillEffect !== null) actualEnergyCost = skillEffect
-  
   // 应用商店永久体力消耗减少
   applySystemEffect(() => {
     const energySave = shopStore.getEnergySaveValue()
     if (energySave > 0) actualEnergyCost = Math.max(1, Math.floor(actualEnergyCost * (1 - energySave)))
   }, '商店系统未加载或应用失败')
-  
   // 应用宠物体力消耗减少
   applySystemEffect(() => {
     const petStore = usePetStore()
     const petEnergySave = petStore.getPetBonus(petStore.PET_TYPES.ENERGY, 'energySave') / 100
     if (petEnergySave > 0) actualEnergyCost = Math.max(1, Math.floor(actualEnergyCost * (1 - petEnergySave)))
   }, '宠物系统未加载或应用失败')
-  
   return actualEnergyCost
 }
 
@@ -107,14 +103,17 @@ const calculateReward = (task) => {
   // 获取原始奖励
   const baseReward = task.reward
   let finalReward = { ...baseReward }
-  
+  // 应用商店临时加成
+  applySystemEffect(() => {
+    const goldBoost = shopStore.getBoostValue('gold')
+    if (goldBoost > 0) finalReward.gold = Math.floor(finalReward.gold * (1 + goldBoost))
+  }, '商店系统未加载或应用失败')
   // 应用技能加成
   const skillReward = applySystemEffect(
     () => skillStore.applySkillsToReward(task, finalReward),
     '技能系统未加载或应用失败'
   )
   if (skillReward !== null) finalReward = skillReward
-  
   // 应用商店永久加成
   applySystemEffect(() => {
     // 应用任务特定加成
@@ -123,17 +122,14 @@ const calculateReward = (task) => {
     const expBoost = shopStore.getTaskBoost(task.id, 'experience')
     if (expBoost > 0) finalReward.experience = Math.floor(finalReward.experience * (1 + expBoost))
   }, '商店系统未加载或应用失败')
-  
   // 应用宠物加成
   applySystemEffect(() => {
     const petStore = usePetStore()
     const petGoldBoost = petStore.getPetBonus(petStore.PET_TYPES.GOLD, 'goldBoost') / 100
     if (petGoldBoost > 0) finalReward.gold = Math.floor(finalReward.gold * (1 + petGoldBoost))
-
     const petExpBoost = petStore.getPetBonus(petStore.PET_TYPES.UTILITY, 'expBoost') / 100
     if (petExpBoost > 0) finalReward.experience = Math.floor(finalReward.experience * (1 + petExpBoost))
   }, '宠物系统未加载或应用失败')
-  
   // 应用随机事件加成
   applySystemEffect(() => {
     const eventStore = useEventStore()
@@ -145,11 +141,20 @@ const calculateReward = (task) => {
       eventStore.consumeTaskEffect('reward_multiplier')
     }
   }, '事件系统未加载或应用失败')
-  
   return finalReward
 }
 
-// 开始任务
+// 计算任务实际持续时间
+const calculateTaskDuration = (task) => {
+  let actualDuration = task.duration
+  // 应用商店临时加成
+  applySystemEffect(() => {
+    const speedBoost = shopStore.getBoostValue('task_speed')
+    if (speedBoost > 0) actualDuration = Math.max(1000, Math.floor(actualDuration / (1 + speedBoost)))
+  }, '商店系统未加载或应用失败')
+  return actualDuration
+}
+
 const startTask = (task) => {
   // 检查等级是否符合条件
   if (task.minLevel > level.value) {
@@ -166,14 +171,13 @@ const startTask = (task) => {
     return
   }
   // 计算任务实际持续时间（应用事件系统速度修饰符）
-  let actualDuration = task.duration
+  let actualDuration = calculateTaskDuration(task)
   applySystemEffect(() => {
     const eventStore = useEventStore()
     const speedModifier = eventStore.getTaskSpeedModifier()
     // 速度修饰符影响持续时间（值越大，速度越快，持续时间越短）
     if (speedModifier !== 1) actualDuration = Math.max(1000, Math.floor(actualDuration / speedModifier))
   }, '事件系统未加载或应用失败')
-  
   selectedTask.value = task
   isTaskRunning.value = true
   resources.value.energy -= actualEnergyCost
@@ -189,27 +193,22 @@ const startTask = (task) => {
 // 完成任务
 const completeTask = () => {
   if (!selectedTask.value) return
-  
-  // 使用calculateReward函数计算最终奖励
+  // 计算最终奖励
   const finalReward = calculateReward(selectedTask.value)
-  
   // 完成任务后的奖励处理
   const processTaskReward = async (reward) => {
     // 更新资源
     resources.value.gold += reward.gold
     resources.value.experience += reward.experience
-    
     // 检查成就
     applySystemEffect(() => {
       const achievementStore = useAchievementStore()
       return achievementStore.checkAchievements()
     }, '成就系统未加载或检查失败')
-    
     // 检查每日任务
     applySystemEffect(() => {
       return dailyTaskStore.updateTaskProgress()
     }, '每日任务系统未加载或更新失败')
-    
     // 随机触发宠物捕获事件
     applySystemEffect(async () => {
       // 根据任务难度和随机性决定是否捕获宠物
@@ -218,7 +217,6 @@ const completeTask = () => {
       if (Math.random() < captureChance) {
         // 随机生成宠物数据
         const petTypes = Object.values(petStore.PET_TYPES)
-        const rarities = Object.values(petStore.RARITY)
         const rarityChances = {
           [petStore.RARITY.COMMON]: 0.6,
           [petStore.RARITY.UNCOMMON]: 0.25,
@@ -285,7 +283,6 @@ const completeTask = () => {
       }
     }, '宠物系统未加载或捕获失败')
   }
-  
   // 更新成就统计
   applySystemEffect(() => {
     const achievementStore = useAchievementStore()
@@ -296,7 +293,6 @@ const completeTask = () => {
     // 更新体力消耗统计
     achievementStore.updateStats('energy_spent', selectedTask.value.energyCost)
   }, '成就系统未加载或更新失败')
-  
   // 更新每日任务进度
   applySystemEffect(() => {
     // 更新金币收集任务
@@ -308,7 +304,6 @@ const completeTask = () => {
     // 更新体力消耗任务
     dailyTaskStore.updateTaskProgress('energy_spent', selectedTask.value.energyCost)
   }, '每日任务系统未加载或更新失败')
-  
   // 调用处理奖励函数
   processTaskReward(finalReward)
   // 检查是否升级
@@ -324,8 +319,10 @@ const completeTask = () => {
 
 // 检查升级
 const checkLevelUp = () => {
-  const expNeeded = level.value * 50
-  if (resources.value.experience >= expNeeded) {
+  while (true) {
+    const expNeeded = level.value * 50
+    if (resources.value.experience < expNeeded) break
+    // 升级逻辑
     resources.value.experience -= expNeeded
     level.value++
     showToast(`恭喜！你升到了${level.value}级`)
@@ -343,7 +340,14 @@ const saveGameState = () => {
       experience: resources.value.experience // 经验
     },
     level: level.value, // 等级
-    nextEnergyRecovery: nextEnergyRecovery.value // 下次体力恢复时间
+    nextEnergyRecovery: nextEnergyRecovery.value, // 下次体力恢复时间
+    // 保存当前任务状态
+    activeTask: isTaskRunning.value ? {
+      taskId: selectedTask.value.id,
+      progress: taskProgress.value,
+      startTime: Date.now(),
+      taskData: JSON.parse(JSON.stringify(selectedTask.value))
+    } : null
   }
   gameStore.saveGameState(gameStateToSave)
 }
@@ -355,6 +359,38 @@ const loadGameState = async () => {
     resources.value = savedState.resources
     level.value = savedState.level
     nextEnergyRecovery.value = savedState.nextEnergyRecovery
+    // 恢复任务状态
+    if (savedState.activeTask) {
+      const activeTask = savedState.activeTask
+      // 找到对应的任务
+      const task = tasks.value.find(t => t.id === activeTask.taskId)
+      if (task) {
+        // 恢复任务状态
+        selectedTask.value = task
+        taskProgress.value = activeTask.progress
+        isTaskRunning.value = true
+        task.loading = true
+        // 如果任务进度未完成，继续执行任务
+        if (taskProgress.value < 100 && gameWorker) {
+          // 计算剩余时间
+          const actualDuration = calculateTaskDuration(task)
+          const elapsedTime = activeTask.progress / 100 * actualDuration
+          const remainingTime = actualDuration - elapsedTime
+          // 通过Worker继续执行任务
+          gameWorker.postMessage({
+            type: 'START_TASK',
+            data: {
+              taskId: task.id,
+              duration: remainingTime,
+              initialProgress: activeTask.progress
+            }
+          })
+        } else if (taskProgress.value >= 100) {
+          // 如果任务已完成但未处理，立即完成任务
+          completeTask()
+        }
+      }
+    }
   }
 }
 
@@ -414,15 +450,27 @@ onMounted(async () => {
   initTasks()
   initWorker()
   await loadGameState()
-  // 商店效果初始化
-  await shopStore.initialize()
-  // 技能效果初始化
-  await skillStore.loadSkills()
-  // 每日任务初始化
-  await dailyTaskStore.initialize()
-  // 通知系统初始化
-  await notificationStore.initialize()
+  // 确保所有相关 store 都正确初始化
+  await Promise.all([
+    shopStore.initialize(),
+    skillStore.loadSkills(),
+    dailyTaskStore.initialize(),
+    notificationStore.initialize(),
+    useEventStore().initialize(), // 事件系统初始化
+    usePetStore().initialize(),   // 宠物系统初始化
+    useAchievementStore().initialize() // 成就系统初始化
+  ])
   initEnergyRecovery()
+})
+
+// 添加页面激活时的处理
+onActivated(() => {
+  // 重新加载游戏状态，确保数据是最新的
+  loadGameState()
+  // 如果Worker被销毁，重新初始化
+  if (!gameWorker) {
+    initWorker()
+  }
 })
 
 onUnmounted(() => {
@@ -467,16 +515,16 @@ onUnmounted(() => {
           :show-pivot="false" color="#2db7f5" />
       </div>
       <div class="game-nav">
-        <van-button icon="setting-o" size="small" @click="router.push('/setting')">设置</van-button>
-        <van-button icon="shop-o" size="small" @click="router.push('/shop')">商店</van-button>
-        <van-button icon="award" size="small" @click="router.push('/achievements')">成就</van-button>
-        <van-button icon="upgrade" size="small" @click="router.push('/skills')">技能</van-button>
-        <van-button icon="calendar-o" size="small" @click="router.push('/daily-tasks')">任务</van-button>
-        <van-button icon="comment-o" size="small" @click="router.push('/notifications')">
+        <van-button icon="setting-o" size="small" to="setting">设置</van-button>
+        <van-button icon="shop-o" size="small" to="shop">商店</van-button>
+        <van-button icon="award" size="small" to="achievements">成就</van-button>
+        <van-button icon="upgrade" size="small" to="skills">技能</van-button>
+        <van-button icon="calendar-o" size="small" to="daily-tasks">任务</van-button>
+        <van-button icon="comment-o" size="small" to="notifications">
           通知
           <van-badge :content="notificationStore.unreadCount" v-if="notificationStore.unreadCount > 0" />
         </van-button>
-        <van-button icon="friends-o" size="small" @click="router.push('/pets')">宠物</van-button>
+        <van-button icon="friends-o" size="small" to="pets">宠物</van-button>
       </div>
     </div>
     <div class="game-content">

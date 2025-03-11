@@ -44,7 +44,7 @@ const resetGame = () => {
       title: '成功',
       message: '游戏已重置'
     }).then(() => {
-      router.push('/')
+      location.reload()
     })
   }).catch(() => { })
 }

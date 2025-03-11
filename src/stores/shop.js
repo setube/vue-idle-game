@@ -262,31 +262,31 @@ export const useShopStore = defineStore('shop', () => {
   // 保存商店数据
   const saveShopData = async () => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        // 数据库升级处理
-        // 确保在任何版本下都检查并创建shop对象存储
-        if (!db.objectStoreNames.contains('shop')) db.createObjectStore('shop', { keyPath: 'id' })
-      })
-      // 保存到数据库
+      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => initDatabase(db, oldVersion, DB_VERSION))
+      // 转换数据为可序列化格式
+      const shopData = {
+        id: 'shopState',
+        items: items.value.map(item => ({
+          ...item,
+          effect: JSON.parse(JSON.stringify(item.effect))
+        })),
+        activeBoosts: activeBoosts.value.map(boost => ({
+          ...boost,
+          active: undefined
+        })),
+        version: DB_VERSION,
+        lastUpdated: new Date().getTime()
+      }
+      // 保存商店状态
       const tx = db.transaction('shop', 'readwrite')
-      // 保存物品数据
-      tx.objectStore('shop').put({
-        id: 'items',
-        list: items.value,
-        lastUpdated: new Date().getTime()
-      })
-      // 保存激活加成
-      tx.objectStore('shop').put({
-        id: 'activeBoosts',
-        boosts: activeBoosts.value,
-        lastUpdated: new Date().getTime()
-      })
+      tx.objectStore('shop').put(shopData)
       // 保存永久效果
-      tx.objectStore('shop').put({
+      const permanentEffectsData = {
         id: 'permanentEffects',
-        effects: permanentEffects.value,
+        effects: JSON.parse(JSON.stringify(permanentEffects.value)),
         lastUpdated: new Date().getTime()
-      })
+      }
+      tx.objectStore('shop').put(permanentEffectsData)
       await tx.done
       return true
     } catch (error) {
@@ -301,32 +301,29 @@ export const useShopStore = defineStore('shop', () => {
       const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
         // 数据库升级处理
         // 确保在任何版本下都检查并创建shop对象存储
-        if (!db.objectStoreNames.contains('shop')) {
-          console.log('创建shop对象存储')
-          db.createObjectStore('shop', { keyPath: 'id' })
-        }
+        if (!db.objectStoreNames.contains('shop')) db.createObjectStore('shop', { keyPath: 'id' })
       })
       // 从数据库加载
-      const itemsData = await db.get('shop', 'items')
-      const boostsData = await db.get('shop', 'activeBoosts')
-      const effectsData = await db.get('shop', 'permanentEffects')
-      if (itemsData && itemsData.list) {
+      const shopData = await db.get('shop', 'shopState')
+      const permanentEffectsData = await db.get('shop', 'permanentEffects')
+      // 加载商店物品数据
+      if (shopData && shopData.items) {
         // 更新物品列表，但保留默认物品的结构
-        const savedItems = itemsData.list
+        const savedItems = shopData.items
         // 合并保存的物品状态到默认物品列表
         items.value = items.value.map(defaultItem => {
           const savedItem = savedItems.find(i => i.id === defaultItem.id)
           return savedItem ? { ...defaultItem, ...savedItem } : defaultItem
         })
       }
-      if (boostsData && boostsData.boosts) {
+      // 加载临时加成数据
+      if (shopData && shopData.activeBoosts) {
         // 过滤掉已过期的加成
         const currentTime = Date.now()
-        activeBoosts.value = boostsData.boosts.filter(boost => boost.endTime > currentTime)
+        activeBoosts.value = shopData.activeBoosts.filter(boost => boost.endTime > currentTime)
       }
-      if (effectsData && effectsData.effects) {
-        permanentEffects.value = effectsData.effects
-      }
+      // 加载永久效果数据
+      if (permanentEffectsData && permanentEffectsData.effects) permanentEffects.value = permanentEffectsData.effects
       return true
     } catch (error) {
       console.error('加载商店数据失败:', error)

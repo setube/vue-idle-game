@@ -106,16 +106,11 @@ export const useGameStore = defineStore('game', () => {
   // 重置游戏
   const resetGame = async () => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        // 使用共享的数据库初始化函数
-        initDatabase(db, oldVersion, DB_VERSION)
-      })
-      // 删除游戏状态
-      const tx = db.transaction('gameState', 'readwrite')
-      tx.objectStore('gameState').delete('current')
-      await tx.done
+      // 关闭现有数据库连接
+      if (indexedDB && indexedDB.deleteDatabase) indexedDB.deleteDatabase(DB_NAME)
       // 重置本地状态
       gameState.value = null
+      settings.value = null
       return true
     } catch (error) {
       console.error('重置游戏失败:', error)
@@ -126,10 +121,7 @@ export const useGameStore = defineStore('game', () => {
   // 导出游戏数据
   const exportGameData = async () => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        initDatabase(db, oldVersion, DB_VERSION)
-      })
-      
+      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => initDatabase(db, oldVersion, DB_VERSION))
       // 从各个存储中获取数据
       const state = await db.get('gameState', 'current')
       const userSettings = await db.get('settings', 'userSettings')
@@ -140,7 +132,6 @@ export const useGameStore = defineStore('game', () => {
       const dailyTasks = await db.getAll('dailyTasks')
       const notifications = await db.getAll('notifications')
       const pets = await db.getAll('pets')
-      
       // 组织导出数据
       const exportData = {
         version: DB_VERSION,
@@ -155,7 +146,6 @@ export const useGameStore = defineStore('game', () => {
         notifications,
         pets
       }
-      
       return {
         success: true,
         data: exportData
@@ -168,7 +158,7 @@ export const useGameStore = defineStore('game', () => {
       }
     }
   }
-  
+
   // 导入游戏数据
   const importGameData = async (importData) => {
     try {
@@ -179,11 +169,7 @@ export const useGameStore = defineStore('game', () => {
           error: '无效的游戏数据文件'
         }
       }
-      
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        initDatabase(db, oldVersion, DB_VERSION)
-      })
-      
+      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => initDatabase(db, oldVersion, DB_VERSION))
       // 导入游戏状态
       if (importData.gameState) {
         const tx = db.transaction('gameState', 'readwrite')
@@ -191,7 +177,6 @@ export const useGameStore = defineStore('game', () => {
         await tx.done
         gameState.value = importData.gameState
       }
-      
       // 导入设置
       if (importData.settings) {
         const tx = db.transaction('settings', 'readwrite')
@@ -199,7 +184,6 @@ export const useGameStore = defineStore('game', () => {
         await tx.done
         settings.value = importData.settings
       }
-      
       // 导入技能数据
       if (importData.skills && importData.skills.length > 0) {
         const tx = db.transaction('skills', 'readwrite')
@@ -207,7 +191,6 @@ export const useGameStore = defineStore('game', () => {
         await Promise.all(importData.skills.map(skill => store.put(skill)))
         await tx.done
       }
-      
       // 导入商店数据
       if (importData.shop && importData.shop.length > 0) {
         const tx = db.transaction('shop', 'readwrite')
@@ -215,7 +198,6 @@ export const useGameStore = defineStore('game', () => {
         await Promise.all(importData.shop.map(item => store.put(item)))
         await tx.done
       }
-      
       // 导入事件数据
       if (importData.events && importData.events.length > 0) {
         const tx = db.transaction('events', 'readwrite')
@@ -223,7 +205,6 @@ export const useGameStore = defineStore('game', () => {
         await Promise.all(importData.events.map(event => store.put(event)))
         await tx.done
       }
-      
       // 导入成就数据
       if (importData.achievements && importData.achievements.length > 0) {
         const tx = db.transaction('achievements', 'readwrite')
@@ -231,7 +212,6 @@ export const useGameStore = defineStore('game', () => {
         await Promise.all(importData.achievements.map(achievement => store.put(achievement)))
         await tx.done
       }
-      
       // 导入每日任务数据
       if (importData.dailyTasks && importData.dailyTasks.length > 0) {
         const tx = db.transaction('dailyTasks', 'readwrite')
@@ -239,7 +219,6 @@ export const useGameStore = defineStore('game', () => {
         await Promise.all(importData.dailyTasks.map(task => store.put(task)))
         await tx.done
       }
-      
       // 导入通知数据
       if (importData.notifications && importData.notifications.length > 0) {
         const tx = db.transaction('notifications', 'readwrite')
@@ -247,7 +226,6 @@ export const useGameStore = defineStore('game', () => {
         await Promise.all(importData.notifications.map(notification => store.put(notification)))
         await tx.done
       }
-      
       // 导入宠物数据
       if (importData.pets && importData.pets.length > 0) {
         const tx = db.transaction('pets', 'readwrite')
@@ -255,7 +233,6 @@ export const useGameStore = defineStore('game', () => {
         await Promise.all(importData.pets.map(pet => store.put(pet)))
         await tx.done
       }
-      
       return {
         success: true
       }

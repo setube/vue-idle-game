@@ -142,42 +142,94 @@ export const useAchievementStore = defineStore('achievements', () => {
   // 领取成就奖励
   const claimAchievementReward = async (achievementId) => {
     const achievement = achievements.value.find(a => a.id === achievementId)
-    if (!achievement || !achievement.completed) return { success: false, message: '成就未完成' }
-    // 获取当前游戏状态
-    const gameState = await gameStore.loadGameState()
-    if (!gameState) return { success: false, message: '无法加载游戏状态' }
-    // 添加奖励
-    gameState.resources.gold += achievement.reward.gold
-    gameState.resources.experience += achievement.reward.experience
-    // 保存游戏状态
-    await gameStore.saveGameState(gameState)
-    // 标记成就奖励已领取
-    achievement.rewardClaimed = true
-    saveAchievements()
-    return {
-      success: true,
-      message: '成就奖励已领取',
-      reward: achievement.reward
+    if (!achievement || !achievement.completed || achievement.rewardClaimed) return { success: false, message: '无法领取该成就奖励' }
+    try {
+      // 获取当前游戏状态
+      const gameState = await gameStore.loadGameState()
+      if (!gameState) return { success: false, message: '无法加载游戏状态' }
+      // 添加奖励
+      gameState.resources.gold += achievement.reward.gold
+      gameState.resources.experience += achievement.reward.experience
+      // 保存游戏状态
+      await gameStore.saveGameState(gameState)
+      // 标记成就奖励已领取
+      achievement.rewardClaimed = true
+      // 立即保存到数据库
+      const db = await openDB(DB_NAME, DB_VERSION)
+      const tx = db.transaction('achievements', 'readwrite')
+      const store = tx.objectStore('achievements')
+      await store.put({
+        id: achievement.id,
+        rewardClaimed: true,
+        completed: true
+      })
+      await tx.done
+      return {
+        success: true,
+        message: '成就奖励已领取',
+        reward: achievement.reward
+      }
+    } catch (error) {
+      console.error('领取奖励失败:', error)
+      return { success: false, message: '领取奖励失败' }
+    }
+  }
+
+  // 加载成就数据
+  const loadAchievements = async () => {
+    try {
+      const db = await openDB(DB_NAME, DB_VERSION)
+      const tx = db.transaction('achievements', 'readonly')
+      const store = tx.objectStore('achievements')
+      // 尝试获取整体成就数据
+      const achievementsData = await store.get('achievements')
+      // 如果存在整体数据，则使用它
+      if (achievementsData && achievementsData.list) {
+        achievements.value = achievementsData.list
+        return achievements.value
+      }
+      // 如果不存在整体数据，尝试获取单个成就记录
+      const request = store.getAll()
+      const savedAchievements = await new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+      })
+      // 合并数据库状态到默认成就列表
+      achievements.value = achievements.value.map(defaultAchievement => {
+        const saved = savedAchievements.find(a => a.id === defaultAchievement.id)
+        return saved ? {
+          ...defaultAchievement,
+          rewardClaimed: saved.rewardClaimed || false,
+          completed: saved.completed || false
+        } : defaultAchievement
+      })
+      return achievements.value
+    } catch (error) {
+      console.error('加载成就数据失败:', error)
+      return achievements.value
     }
   }
 
   // 保存成就数据
   const saveAchievements = async () => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        // 数据库升级处理
-        // 创建成就存储
-        if (oldVersion < 3 && !db.objectStoreNames.contains('achievements')) db.createObjectStore('achievements', { keyPath: 'id' })
-      })
-      // 创建纯数据对象的深拷贝，确保可以被序列化
-      const achievementsClone = JSON.parse(JSON.stringify(achievements.value))
-      // 保存到数据库
+      const db = await openDB(DB_NAME, DB_VERSION)
       const tx = db.transaction('achievements', 'readwrite')
-      tx.objectStore('achievements').put({
+      const store = tx.objectStore('achievements')
+      // 保存整体成就数据
+      await store.put({
         id: 'achievements',
-        list: achievementsClone,
+        list: JSON.parse(JSON.stringify(achievements.value)),
         lastUpdated: new Date().getTime()
       })
+      // 同时保存单个成就记录
+      await Promise.all(achievements.value.map(achievement => {
+        return store.put({
+          id: achievement.id,
+          rewardClaimed: achievement.rewardClaimed,
+          completed: achievement.completed
+        })
+      }))
       await tx.done
       return true
     } catch (error) {
@@ -208,33 +260,6 @@ export const useAchievementStore = defineStore('achievements', () => {
     } catch (error) {
       console.error('保存统计数据失败:', error)
       return false
-    }
-  }
-
-  // 加载成就数据
-  const loadAchievements = async () => {
-    try {
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        // 数据库升级处理
-        // 创建成就存储
-        if (oldVersion < 3 && !db.objectStoreNames.contains('achievements')) db.createObjectStore('achievements', { keyPath: 'id' })
-      })
-      // 从数据库加载
-      const achievementsData = await db.get('achievements', 'achievements')
-      if (achievementsData && achievementsData.list) {
-        // 更新本地状态，但保留默认成就的结构
-        const savedAchievements = achievementsData.list
-        // 合并保存的成就状态到默认成就列表
-        achievements.value = achievements.value.map(defaultAchievement => {
-          const savedAchievement = savedAchievements.find(a => a.id === defaultAchievement.id)
-          return savedAchievement ? { ...defaultAchievement, ...savedAchievement } : defaultAchievement
-        })
-        return achievements.value
-      }
-      return achievements.value
-    } catch (error) {
-      console.error('加载成就数据失败:', error)
-      return achievements.value
     }
   }
 

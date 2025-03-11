@@ -29,9 +29,7 @@ const loadPetData = async () => {
   pets.value = petStore.availablePets
   // 加载玩家资源
   const gameState = await gameStore.loadGameState()
-  if (gameState) {
-    resources.value.gold = gameState.resources.gold
-  }
+  if (gameState) resources.value.gold = gameState.resources.gold
 }
 
 // 选择宠物
@@ -63,12 +61,10 @@ const renamePet = async () => {
   }
   const result = await petStore.renamePet(selectedPet.value.id, newPetName.value)
   if (result.success) {
-    showToast(result.message)
     showRenameDialog.value = false
     await loadPetData()
-  } else {
-    showToast(result.message)
   }
+  showToast(result.message)
 }
 
 // 喂食宠物
@@ -239,7 +235,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <!-- 重命名对话框 -->
     <van-dialog v-model:show="showRenameDialog" title="重命名宠物" show-cancel-button @confirm="renamePet">
       <van-field v-model="newPetName" label="新名称" placeholder="请输入新名称" :maxlength="20" />
     </van-dialog>

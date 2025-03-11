@@ -34,7 +34,7 @@ const startTask = (taskData) => {
     id: taskData.taskId,
     duration: taskData.duration,
     startTime: Date.now(),
-    progress: 0
+    progress: taskData.initialProgress || 0 // 支持从指定进度开始任务
   }
   // 计算更新间隔（每秒更新10次进度）
   const updateInterval = Math.max(50, Math.floor(taskData.duration / 100))
@@ -42,6 +42,17 @@ const startTask = (taskData) => {
   taskInterval = setInterval(() => {
     updateTaskProgress()
   }, updateInterval)
+  
+  // 如果有初始进度，立即发送一次进度更新
+  if (activeTask.progress > 0) {
+    self.postMessage({
+      type: 'TASK_PROGRESS',
+      data: {
+        taskId: activeTask.id,
+        progress: activeTask.progress
+      }
+    })
+  }
 }
 
 /**
@@ -50,19 +61,20 @@ const startTask = (taskData) => {
 const updateTaskProgress = () => {
   if (!activeTask) return
   const elapsedTime = Date.now() - activeTask.startTime
-  const progress = Math.min(100, Math.floor((elapsedTime / activeTask.duration) * 100))
+  // 计算当前进度，考虑初始进度
+  const currentProgress = Math.min(100, activeTask.progress + Math.floor((elapsedTime / activeTask.duration) * (100 - activeTask.progress)))
   // 更新进度
-  activeTask.progress = progress
+  activeTask.progress = currentProgress
   // 发送进度更新到主线程
   self.postMessage({
     type: 'TASK_PROGRESS',
     data: {
       taskId: activeTask.id,
-      progress: progress
+      progress: currentProgress
     }
   })
   // 如果任务完成，清理资源
-  if (progress >= 100) {
+  if (currentProgress >= 100) {
     clearInterval(taskInterval)
     taskInterval = null
     activeTask = null
