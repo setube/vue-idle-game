@@ -20,13 +20,24 @@ export const useShopStore = defineStore('shop', () => {
       purchased: 0 // 已购买数量
     },
     {
+      id: 'energy_potion_max',
+      name: '超大体力药水',
+      description: '立即恢复100点体力',
+      price: 200,
+      effect: { type: 'resource', resource: 'energy', value: 100 },
+      icon: 'fire',
+      minLevel: 50,
+      stock: -1, // -1表示无限库存
+      purchased: 0 // 已购买数量
+    },
+    {
       id: 'exp_scroll',
       name: '经验卷轴',
       description: '立即获得50点经验',
       price: 100,
       effect: { type: 'resource', resource: 'experience', value: 50 },
       icon: 'bookmark',
-      minLevel: 2,
+      minLevel: 1,
       stock: -1,
       purchased: 0
     },
@@ -35,9 +46,9 @@ export const useShopStore = defineStore('shop', () => {
       name: '金币加成',
       description: '在10分钟内获得的金币增加20%',
       price: 200,
-      effect: { type: 'boost', boostType: 'gold', value: 0.2, duration: 60000 }, // 持续10分钟
+      effect: { type: 'boost', boostType: 'gold', value: 0.2, duration: 600000 }, // 持续10分钟
       icon: 'gold-coin',
-      minLevel: 3,
+      minLevel: 1,
       stock: -1,
       purchased: 0
     },
@@ -48,7 +59,18 @@ export const useShopStore = defineStore('shop', () => {
       price: 300,
       effect: { type: 'boost', boostType: 'energy_regen', value: 0.5, duration: 600000 }, // 持续10分钟
       icon: 'replay',
-      minLevel: 4,
+      minLevel: 1,
+      stock: -1,
+      purchased: 0
+    },
+    {
+      id: 'energy_regen_max',
+      name: '超级体力恢复加速器',
+      description: '在10分钟内体力恢复速度提高500%',
+      price: 3000,
+      effect: { type: 'boost', boostType: 'energy_regen', value: 5, duration: 600000 }, // 持续10分钟
+      icon: 'replay',
+      minLevel: 50,
       stock: -1,
       purchased: 0
     },
@@ -59,7 +81,18 @@ export const useShopStore = defineStore('shop', () => {
       price: 250,
       effect: { type: 'boost', boostType: 'task_speed', value: 0.3, duration: 600000 }, // 持续10分钟
       icon: 'clock',
-      minLevel: 3,
+      minLevel: 1,
+      stock: -1,
+      purchased: 0
+    },
+    {
+      id: 'task_speed_max',
+      name: '超级任务加速器',
+      description: '在10分钟内任务完成速度提高200%',
+      price: 2500,
+      effect: { type: 'boost', boostType: 'task_speed', value: 2, duration: 600000 }, // 持续10分钟
+      icon: 'clock',
+      minLevel: 50,
       stock: -1,
       purchased: 0
     },
@@ -70,7 +103,7 @@ export const useShopStore = defineStore('shop', () => {
       price: 500,
       effect: { type: 'permanent', effectType: 'task_boost', taskId: 1, resourceType: 'gold', value: 0.15 },
       icon: 'gem',
-      minLevel: 5,
+      minLevel: 1,
       stock: 1, // 只能购买一次
       purchased: 0
     },
@@ -92,7 +125,18 @@ export const useShopStore = defineStore('shop', () => {
       price: 800,
       effect: { type: 'permanent', effectType: 'energy_save', value: 0.1 },
       icon: 'certificate',
-      minLevel: 6,
+      minLevel: 10,
+      stock: 1,
+      purchased: 0
+    },
+    {
+      id: 'energy_saver_max',
+      name: '超级体力节省器',
+      description: '永久减少所有任务的体力消耗100%',
+      price: 999999,
+      effect: { type: 'permanent', effectType: 'energy_save', value: 1 },
+      icon: 'certificate',
+      minLevel: 50,
       stock: 1,
       purchased: 0
     }
@@ -160,7 +204,7 @@ export const useShopStore = defineStore('shop', () => {
           gameState.resources.gold = Math.max(0, gameState.resources.gold + value)
           effectResult.description = `获得了 ${value} 金币`
         } else if (resource === 'energy') {
-          gameState.resources.energy = Math.max(0, Math.min(100, gameState.resources.energy + value))
+          gameState.resources.energy = Math.max(0, Math.min(100 + gameState.level, gameState.resources.energy + value))
           effectResult.description = `恢复了 ${value} 体力`
         } else if (resource === 'experience') {
           gameState.resources.experience = Math.max(0, gameState.resources.experience + value)
@@ -194,7 +238,7 @@ export const useShopStore = defineStore('shop', () => {
         }
         // 检查是否已存在相同效果
         const existingEffectIndex = permanentEffects.value.findIndex(e => e.id === effect.id)
-        // 更新现有效果
+        // 更新现效果
         if (existingEffectIndex !== -1) permanentEffects.value[existingEffectIndex] = effect
         // 添加新效果
         else permanentEffects.value.push(effect)

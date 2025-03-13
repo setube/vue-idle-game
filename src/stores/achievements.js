@@ -20,6 +20,42 @@ export const useAchievementStore = defineStore('achievements', () => {
       icon: 'gold-coin'
     },
     {
+      id: 'first_gold_2',
+      name: '初次收获2',
+      description: '累计获得1000金币',
+      requirement: { type: 'gold', value: 1000 },
+      reward: { gold: 100, experience: 200 },
+      completed: false,
+      icon: 'gold-coin'
+    },
+    {
+      id: 'first_gold_3',
+      name: '初次收获3',
+      description: '累计获得10000金币',
+      requirement: { type: 'gold', value: 10000 },
+      reward: { gold: 200, experience: 2000 },
+      completed: false,
+      icon: 'gold-coin'
+    },
+    {
+      id: 'first_gold_4',
+      name: '初次收获4',
+      description: '累计获得100000金币',
+      requirement: { type: 'gold', value: 100000 },
+      reward: { gold: 400, experience: 4000 },
+      completed: false,
+      icon: 'gold-coin'
+    },
+    {
+      id: 'first_gold_5',
+      name: '初次收获5',
+      description: '累计获得9999999金币',
+      requirement: { type: 'gold', value: 9999999 },
+      reward: { gold: 9999999, experience: 9999999 },
+      completed: false,
+      icon: 'gold-coin'
+    },
+    {
       id: 'energy_master',
       name: '精力充沛',
       description: '累计消耗500点体力',
@@ -43,6 +79,42 @@ export const useAchievementStore = defineStore('achievements', () => {
       description: '达到5级',
       requirement: { type: 'level', value: 5 },
       reward: { gold: 200, experience: 100 },
+      completed: false,
+      icon: 'upgrade'
+    },
+    {
+      id: 'level_up_2',
+      name: '成长之路2',
+      description: '达到20级',
+      requirement: { type: 'level', value: 20 },
+      reward: { gold: 800, experience: 400 },
+      completed: false,
+      icon: 'upgrade'
+    },
+    {
+      id: 'level_up_3',
+      name: '成长之路3',
+      description: '达到40级',
+      requirement: { type: 'level', value: 40 },
+      reward: { gold: 1600, experience: 800 },
+      completed: false,
+      icon: 'upgrade'
+    },
+    {
+      id: 'level_up_4',
+      name: '成长之路4',
+      description: '达到60级',
+      requirement: { type: 'level', value: 60 },
+      reward: { gold: 3200, experience: 1600 },
+      completed: false,
+      icon: 'upgrade'
+    },
+    {
+      id: 'level_up_5',
+      name: '成长之路5',
+      description: '达到100级',
+      requirement: { type: 'level', value: 100 },
+      reward: { gold: 5000, experience: 30000 },
       completed: false,
       icon: 'upgrade'
     },

@@ -42,7 +42,7 @@ const startTask = (taskData) => {
   taskInterval = setInterval(() => {
     updateTaskProgress()
   }, updateInterval)
-  
+
   // 如果有初始进度，立即发送一次进度更新
   if (activeTask.progress > 0) {
     self.postMessage({

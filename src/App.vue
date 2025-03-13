@@ -19,7 +19,9 @@ loadSettings()
   <div class="app-container">
     <van-config-provider :theme="darkMode">
       <router-view v-slot="{ Component }">
-        <component :is="Component" />
+        <keep-alive include="{ DailyTasks }">
+          <component :is="Component" />
+        </keep-alive>
       </router-view>
       <van-back-top />
     </van-config-provider>

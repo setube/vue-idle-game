@@ -71,7 +71,7 @@ const getNextRefreshTime = () => {
 const formatNextRefreshTime = () => {
   const nextRefresh = getNextRefreshTime()
   // 格式化为本地日期和时间
-  return `${nextRefresh.toLocaleDateString()} ${nextRefresh.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`
+  return `${nextRefresh.toLocaleDateString()} ${nextRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
 }
 
 // 生命周期钩子
@@ -119,12 +119,7 @@ onMounted(() => {
           <van-cell-group inset>
             <van-cell v-for="task in completedTasks" :key="task.id" :title="task.name" :label="task.description">
               <template #right-icon>
-                <van-button 
-                  size="small" 
-                  type="primary" 
-                  @click="claimTaskReward(task.id)" 
-                  :disabled="task.claimed"
-                >
+                <van-button size="small" type="primary" @click="claimTaskReward(task.id)" :disabled="task.claimed">
                   {{ task.claimed ? '已领取' : '领取奖励' }}
                 </van-button>
               </template>

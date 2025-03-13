@@ -39,7 +39,14 @@ const initTasks = () => {
   tasks.value = [
     { id: 1, name: '采集资源', minLevel: 1, duration: 5000, loading: false, reward: { gold: 10, experience: 5 }, energyCost: 10 },
     { id: 2, name: '探索地图', minLevel: 5, duration: 10000, loading: false, reward: { gold: 25, experience: 15 }, energyCost: 20 },
-    { id: 3, name: '击败怪物', minLevel: 10, duration: 15000, loading: false, reward: { gold: 50, experience: 30 }, energyCost: 30 }
+    { id: 3, name: '击败怪物', minLevel: 10, duration: 15000, loading: false, reward: { gold: 50, experience: 30 }, energyCost: 30 },
+    { id: 4, name: '奇异之旅', minLevel: 20, duration: 30000, loading: false, reward: { gold: 75, experience: 60 }, energyCost: 40 },
+    { id: 5, name: '偶遇公主', minLevel: 40, duration: 60000, loading: false, reward: { gold: 100, experience: 120 }, energyCost: 50 },
+    { id: 6, name: '送回王国', minLevel: 60, duration: 120000, loading: false, reward: { gold: 125, experience: 240 }, energyCost: 60 },
+    { id: 7, name: '牢狱之灾', minLevel: 80, duration: 240000, loading: false, reward: { gold: 150, experience: 480 }, energyCost: 70 },
+    { id: 8, name: '大闹王国', minLevel: 100, duration: 480000, loading: false, reward: { gold: 175, experience: 960 }, energyCost: 80 },
+    { id: 9, name: '发现真相', minLevel: 120, duration: 960000, loading: false, reward: { gold: 200, experience: 1920 }, energyCost: 90 },
+    { id: 10, name: '成为国王', minLevel: 200, duration: 2000000, loading: false, reward: { gold: 1000, experience: 10000 }, energyCost: 1000 },
   ]
 }
 
@@ -327,7 +334,7 @@ const checkLevelUp = () => {
     level.value++
     showToast(`恭喜！你升到了${level.value}级`)
     // 升级后恢复体力
-    resources.value.energy = 100
+    resources.value.energy = 100 + level.value
   }
 }
 
@@ -412,7 +419,7 @@ const initEnergyRecovery = () => {
     const elapsedTime = Date.now() - nextEnergyRecovery.value
     if (elapsedTime > 0) {
       const recoveryCount = Math.floor(elapsedTime / recoveryInterval) + 1
-      const newEnergy = Math.min(100, resources.value.energy + (recoveryAmount * recoveryCount))
+      const newEnergy = Math.min(100 + level.value, resources.value.energy + (recoveryAmount * recoveryCount))
       const energyDiff = newEnergy - resources.value.energy
       if (energyDiff > 0) {
         resources.value.energy = newEnergy
@@ -428,14 +435,14 @@ const initEnergyRecovery = () => {
   )
   // 设置恢复定时器...
   energyTimer.value = setTimeout(() => {
-    if (resources.value.energy < 100) {
-      resources.value.energy = Math.min(100, resources.value.energy + recoveryAmount)
+    if (resources.value.energy < (100 + level.value)) {
+      resources.value.energy = Math.min(100 + level.value, resources.value.energy + recoveryAmount)
       nextEnergyRecovery.value = Date.now() + recoveryInterval
       saveGameState()
     }
     energyTimer.value = setInterval(() => {
-      if (resources.value.energy < 100) {
-        resources.value.energy = Math.min(100, resources.value.energy + recoveryAmount)
+      if (resources.value.energy < (100 + level.value)) {
+        resources.value.energy = Math.min(100 + level.value, resources.value.energy + recoveryAmount)
         nextEnergyRecovery.value = Date.now() + recoveryInterval
         saveGameState()
       } else {
@@ -443,6 +450,25 @@ const initEnergyRecovery = () => {
       }
     }, recoveryInterval)
   }, initialDelay) // 使用计算后的延迟时间
+}
+
+const up = () => {
+  level.value *= 50
+  resources.value.gold += 10000
+  saveGameState()
+}
+
+const name = (level) => {
+  if (level >= 1 && level < 5) return '村民'
+  if (level >= 5 && level < 10) return '冒险者'
+  if (level >= 10 && level < 20) return '怪物猎人'
+  if (level >= 20 && level < 40) return '奇异旅人'
+  if (level >= 40 && level < 60) return '公主护卫'
+  if (level >= 60 && level < 80) return '王国使者'
+  if (level >= 80 && level < 100) return '囚徒'
+  if (level >= 100 && level < 120) return '王国叛逆者'
+  if (level >= 120 && level < 200) return '真相追寻者'
+  if (level >= 200) return '国王'
 }
 
 // 生命周期钩子
@@ -494,6 +520,10 @@ onUnmounted(() => {
     <div class="game-header">
       <div class="resource-panel">
         <div class="resource">
+          <span class="resource-label">称号</span>
+          <span class="resource-value">{{ name(level) }}</span>
+        </div>
+        <div class="resource">
           <span class="resource-label">金币</span>
           <span class="resource-value">{{ resources.gold }}</span>
         </div>
@@ -525,6 +555,7 @@ onUnmounted(() => {
           <van-badge :content="notificationStore.unreadCount" v-if="notificationStore.unreadCount > 0" />
         </van-button>
         <van-button icon="friends-o" size="small" to="pets">宠物</van-button>
+        <van-button icon="friends-o" size="small" @click="up">GM</van-button>
       </div>
     </div>
     <div class="game-content">
@@ -533,7 +564,6 @@ onUnmounted(() => {
         <van-progress :percentage="taskProgress" :pivot-text="`${taskProgress}%`" color="#7232dd" />
       </div>
       <div class="task-list">
-        <h2>可用任务</h2>
         <van-cell-group inset>
           <van-cell v-for="task in tasks" :key="task.id" :title="task.name"
             :label="`等级要求: ${task.minLevel}级 | 奖励: ${calculateReward(task).gold}金币, ${calculateReward(task).experience}经验 | 消耗: ${calculateEnergyCost(task)}体力`"

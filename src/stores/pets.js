@@ -188,6 +188,7 @@ export const usePetStore = defineStore('pets', () => {
       leveledUp
     }
   }
+
   // 重命名宠物
   const renamePet = async (petId, newName) => {
     const pet = pets.value.find(p => p.id === petId)
@@ -195,6 +196,30 @@ export const usePetStore = defineStore('pets', () => {
     pet.name = newName
     await savePets()
     return { success: true, message: '重命名成功' }
+  }
+
+  // 放生宠物
+  const releasePet = async (petId) => {
+    const petIndex = pets.value.findIndex(p => p.id === petId)
+    if (petIndex === -1) return { success: false, message: '宠物不存在' }
+    // 如果放生的是当前激活的宠物，需要取消激活状态
+    if (activePet.value?.id !== petId) activePet.value = null
+    // 从列表中移除宠物
+    const [releasedPet] = pets.value.splice(petIndex, 1)
+    // 保存更新后的宠物列表
+    await savePets()
+    // 创建通知
+    await notificationStore.createNotification({
+      title: '宠物放生',
+      message: `你放生了宠物：${releasedPet.name}。`,
+      type: notificationStore.NOTIFICATION_TYPES.SYSTEM,
+      data: { petId: releasedPet.id }
+    })
+    return {
+      success: true,
+      message: `成功放生宠物：${releasedPet.name}`,
+      releasedPet
+    }
   }
 
   // 获取宠物提供的加成
@@ -240,6 +265,7 @@ export const usePetStore = defineStore('pets', () => {
     getPetBonus,
     getRarityName,
     getPetTypeName,
-    availablePets
+    availablePets,
+    releasePet
   }
 })
