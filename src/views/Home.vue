@@ -452,12 +452,6 @@ const initEnergyRecovery = () => {
   }, initialDelay) // 使用计算后的延迟时间
 }
 
-const up = () => {
-  level.value *= 50
-  resources.value.gold += 10000
-  saveGameState()
-}
-
 const name = (level) => {
   if (level >= 1 && level < 5) return '村民'
   if (level >= 5 && level < 10) return '冒险者'
@@ -555,7 +549,6 @@ onUnmounted(() => {
           <van-badge :content="notificationStore.unreadCount" v-if="notificationStore.unreadCount > 0" />
         </van-button>
         <van-button icon="friends-o" size="small" to="pets">宠物</van-button>
-        <van-button icon="friends-o" size="small" @click="up">GM</van-button>
       </div>
     </div>
     <div class="game-content">
