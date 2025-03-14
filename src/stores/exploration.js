@@ -210,7 +210,8 @@ export const useExplorationStore = defineStore('exploration', () => {
       const db = await openDB(gameStore.DB_NAME, gameStore.DB_VERSION)
       const tx = db.transaction('exploration', 'readwrite')
       for (const area of defaultAreas) {
-        tx.objectStore('exploration').put(area)
+        // 深拷贝
+        tx.objectStore('exploration').put(JSON.parse(JSON.stringify(area)))
       }
       await tx.done
       areas.value = defaultAreas
@@ -236,7 +237,9 @@ export const useExplorationStore = defineStore('exploration', () => {
       const gameStore = useGameStore()
       const db = await openDB(gameStore.DB_NAME, gameStore.DB_VERSION)
       const tx = db.transaction('exploration', 'readwrite')
-      tx.objectStore('exploration').put(area)
+      // 深拷贝
+      const areaCopy = JSON.parse(JSON.stringify(area))
+      tx.objectStore('exploration').put(areaCopy)
       await tx.done
       return { success: true, message: `已解锁${area.name}` }
     } catch (error) {
@@ -264,7 +267,7 @@ export const useExplorationStore = defineStore('exploration', () => {
         duration: area.duration,
         status: 'exploring',
         energyCost: area.energyCost,
-        area: JSON.parse(JSON.stringify(area)) // 使用JSON序列化和反序列化进行深拷贝，确保移除不可序列化的内容
+        area: JSON.parse(JSON.stringify(area)) // 深拷贝
       }
       // 保存到数据库
       const gameStore = useGameStore()
