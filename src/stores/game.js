@@ -8,7 +8,7 @@ export const useGameStore = defineStore('game', () => {
   const settings = ref(null)
   // 数据库名称和版本
   const DB_NAME = 'idle-game-db'
-  const DB_VERSION = 4  // 更新版本号以支持宠物系统
+  const DB_VERSION = 5  // 更新版本号以确保创建所有对象存储
   // 保存游戏状态
   const saveGameState = async (state) => {
     try {
@@ -38,10 +38,8 @@ export const useGameStore = defineStore('game', () => {
   // 加载游戏状态
   const loadGameState = async () => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        // 使用共享的数据库初始化函数
-        initDatabase(db, oldVersion, DB_VERSION)
-      })
+      // 使用共享的数据库初始化函数
+      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => initDatabase(db, oldVersion, DB_VERSION))
       // 从数据库加载
       const state = await db.get('gameState', 'current')
       if (state) {
@@ -59,10 +57,8 @@ export const useGameStore = defineStore('game', () => {
   // 保存设置
   const saveSettings = async (userSettings) => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        // 使用共享的数据库初始化函数
-        initDatabase(db, oldVersion, DB_VERSION)
-      })
+      // 使用共享的数据库初始化函数
+      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => initDatabase(db, oldVersion, DB_VERSION))
       // 准备要保存的数据
       const settingsToSave = {
         id: 'userSettings',
@@ -85,10 +81,8 @@ export const useGameStore = defineStore('game', () => {
   // 加载设置
   const loadSettings = async () => {
     try {
-      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => {
-        // 使用共享的数据库初始化函数
-        initDatabase(db, oldVersion, DB_VERSION)
-      })
+      // 使用共享的数据库初始化函数
+      const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => initDatabase(db, oldVersion, DB_VERSION))
       // 从数据库加载
       const userSettings = await db.get('settings', 'userSettings')
       if (userSettings) {

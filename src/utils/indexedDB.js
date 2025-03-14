@@ -34,7 +34,15 @@ export const initDatabase = (db, oldVersion, newVersion) => {
   }
   // 版本3到版本4的升级 - 添加宠物系统
   // 创建宠物存储
-  if (oldVersion < 4 && !db.objectStoreNames.contains('pets')) db.createObjectStore('pets', { keyPath: 'id' })
+  if (oldVersion < 4) {
+    if (!db.objectStoreNames.contains('pets')) db.createObjectStore('pets', { keyPath: 'id' })
+  }
+  // 版本4到版本5的升级 - 添加探索和装备系统
+  if (oldVersion < 5) {
+    // 添加探索和装备存储
+    if (!db.objectStoreNames.contains('exploration')) db.createObjectStore('exploration', { keyPath: 'id' })
+    if (!db.objectStoreNames.contains('equipment')) db.createObjectStore('equipment', { keyPath: 'id' })
+  }
 }
 
 /**

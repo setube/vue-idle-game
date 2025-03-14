@@ -220,7 +220,7 @@ const completeTask = () => {
     applySystemEffect(async () => {
       // 根据任务难度和随机性决定是否捕获宠物
       const petStore = usePetStore()
-      const captureChance = 0.05 + (level.value * 0.002) // 基础5%几率，每级增加0.2%
+      const captureChance = 0.05 + Math.min(10, level.value * 0.002) // 基础5%几率，每级增加0.2%
       if (Math.random() < captureChance) {
         // 随机生成宠物数据
         const petTypes = Object.values(petStore.PET_TYPES)
@@ -261,7 +261,7 @@ const completeTask = () => {
         const petName = petNames[Math.floor(Math.random() * petNames.length)]
         // 根据宠物类型生成对应属性
         let stats = {}
-        const baseValue = Math.floor(5 + level.value * 0.5) * rarityMultiplier[petRarity]
+        const baseValue = 5.5 * rarityMultiplier[petRarity]
         switch (petType) {
           case petStore.PET_TYPES.GOLD:
             stats = { goldBoost: baseValue }
@@ -549,6 +549,8 @@ onUnmounted(() => {
           <van-badge :content="notificationStore.unreadCount" v-if="notificationStore.unreadCount > 0" />
         </van-button>
         <van-button icon="friends-o" size="small" to="pets">宠物</van-button>
+        <van-button icon="guide-o" size="small" to="exploration">探索</van-button>
+        <van-button icon="gem-o" size="small" to="equipment">装备</van-button>
       </div>
     </div>
     <div class="game-content">
@@ -590,7 +592,7 @@ onUnmounted(() => {
 
 .game-nav {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   margin-top: 8px;
   flex-wrap: wrap;
 }

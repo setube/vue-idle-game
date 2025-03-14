@@ -8,6 +8,8 @@ import Shop from '../views/Shop.vue'
 import DailyTasks from '../views/DailyTasks.vue'
 import Notifications from '../views/Notifications.vue'
 import Pets from '../views/Pets.vue'
+import Exploration from '../views/Exploration.vue'
+import Equipment from '../views/Equipment.vue'
 
 // 定义路由
 const routes = [
@@ -50,6 +52,16 @@ const routes = [
     path: '/pets',
     name: 'Pets',
     component: Pets
+  },
+  {
+    path: '/exploration',
+    name: 'Exploration',
+    component: Exploration
+  },
+  {
+    path: '/equipment',
+    name: 'Equipment',
+    component: Equipment
   }
 ]
 
