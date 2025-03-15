@@ -81,7 +81,7 @@ onMounted(() => {
   <div class="achievements-container">
     <div class="achievements-header">
       <div class="back-button">
-        <van-button icon="arrow-left" size="small" @click="router.go(-1)">返回</van-button>
+        <van-button icon="arrow-left" size="small" @click="router.push('/')">返回</van-button>
       </div>
     </div>
     <div class="achievements-content">

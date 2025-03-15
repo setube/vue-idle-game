@@ -84,7 +84,7 @@ onMounted(() => {
   <div class="daily-tasks-container">
     <div class="daily-tasks-header">
       <div class="back-button">
-        <van-button icon="arrow-left" size="small" @click="router.go(-1)">返回</van-button>
+        <van-button icon="arrow-left" size="small" @click="router.push('/')">返回</van-button>
       </div>
       <div class="resource-panel">
         <div class="resource">

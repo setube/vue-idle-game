@@ -85,7 +85,7 @@ onMounted(() => {
   <div class="shop-container">
     <div class="shop-header">
       <div class="back-button">
-        <van-button icon="arrow-left" size="small" @click="router.go(-1)">返回</van-button>
+        <van-button icon="arrow-left" size="small" @click="router.push('/')">返回</van-button>
       </div>
       <div class="player-resources">
         <div class="resource">

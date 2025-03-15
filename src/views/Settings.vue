@@ -117,7 +117,7 @@ onMounted(() => {
   <div class="settings-container">
     <div class="settings-header">
       <div class="back-button">
-        <van-button icon="arrow-left" size="small" @click="router.go(-1)">返回</van-button>
+        <van-button icon="arrow-left" size="small" @click="router.push('/')">返回</van-button>
       </div>
     </div>
     <van-notice-bar left-icon="volume-o" text="本游戏为开源项目，如果您在任何地方通过付费方式购买了本游戏，请及时退款并投诉举报。" />

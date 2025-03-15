@@ -1,20 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useGameStore } from './stores/game'
-import { useSkillStore } from './stores/skills'
-import { useShopStore } from './stores/shop'
-import { useDailyTaskStore } from './stores/dailyTasks'
-import { usePetStore } from './stores/pets'
-import { useAchievementStore } from './stores/achievements'
 
-const router = useRouter()
 const gameStore = useGameStore()
-const skillStore = useSkillStore()
-const shopStore = useShopStore()
-const dailyTaskStore = useDailyTaskStore()
-const petStore = usePetStore()
-const achievementStore = useAchievementStore()
 
 // 监听深色模式设置变化
 const darkMode = ref('light')
@@ -25,35 +13,9 @@ const loadSettings = async () => {
   if (settings) darkMode.value = settings.darkMode
 }
 
-// 添加路由守卫，在路由切换前同步数据
-const setupRouteGuard = () => {
-  router.beforeEach(async (to, from, next) => {
-    try {
-      // 获取当前游戏状态
-      const gameState = await gameStore.loadGameState()
-      if (gameState) {
-        // 同步各个store的数据
-        await Promise.all([
-          gameStore.saveGameState(gameState),
-          skillStore.saveSkills(),
-          shopStore.saveShopData(),
-          dailyTaskStore.saveDailyTasks(),
-          petStore.savePets(),
-          achievementStore.saveStats()
-        ])
-      }
-    } catch (error) {
-      console.error('路由切换时同步数据失败:', error)
-    }
-    // 继续路由导航
-    next()
-  })
-}
-
 // 初始化
 onMounted(() => {
   loadSettings()
-  setupRouteGuard()
 })
 </script>
 

@@ -143,7 +143,7 @@ onMounted(() => {
   <div class="pets-container">
     <div class="pets-header">
       <div class="back-button">
-        <van-button icon="arrow-left" size="small" @click="router.go(-1)">返回</van-button>
+        <van-button icon="arrow-left" size="small" @click="router.push('/')">返回</van-button>
       </div>
       <div class="resource-display">
         <span class="gold"><van-icon name="gold-coin-o" /> {{ resources.gold }}</span>
