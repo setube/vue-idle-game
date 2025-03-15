@@ -47,24 +47,30 @@
 - Pinia 团队提供了简洁的状态管理方案
 
 ## 版权声明
-MIT License
+知识共享署名-非商业性使用 4.0 国际许可协议
 
-Copyright (c) 2025 谦君
+本作品采用知识共享署名-非商业性使用 4.0 国际许可协议进行许可。
+要查看此许可协议的副本，请访问 http://creativecommons.org/licenses/by-nc/4.0/。
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+您自由地：
+共享 — 在任何媒介以任何形式复制、发行本作品
+改编 — 修改、转换或以本作品为基础进行创作
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+惟须遵守以下条件：
+署名 — 您必须给出适当的署名，提供指向本许可协议的链接，同时标明是否（对原始作品）作了修改。您可以用任何合理的方式来署名，但不得以任何方式暗示许可人为您或您的使用背书。
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+非商业性使用 — 您不得将本作品用于商业目的。
+
+没有附加限制 — 您不得适用法律术语或者技术措施从而限制其他人做许可协议允许的事情。
+
+声明：
+本作品是作者（谦君）的原创作品，项目源码地址：https://github.com/setube/vue-idle-game
+本授权条款不得被视为或解释为对任何版权的放弃或其他限制。
+
+当您分享本作品的改编版本时，您必须：
+- 在显著位置标注原作者的署名
+- 保留本许可协议文档
+- 明确说明修改内容及修改日期
+- 使用相同的 CC BY-NC 4.0 协议进行分发
+
+© 2025 谦君 - 保留所有权利（根据本许可协议授予的权限除外）

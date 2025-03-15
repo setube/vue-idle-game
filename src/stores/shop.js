@@ -390,6 +390,7 @@ export const useShopStore = defineStore('shop', () => {
     getBoostValue,
     getTaskBoost,
     getEnergySaveValue,
-    initialize
+    initialize,
+    saveShopData
   }
 })

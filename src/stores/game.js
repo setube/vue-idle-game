@@ -117,28 +117,32 @@ export const useGameStore = defineStore('game', () => {
     try {
       const db = await openDB(DB_NAME, DB_VERSION, (db, oldVersion) => initDatabase(db, oldVersion, DB_VERSION))
       // 从各个存储中获取数据
-      const state = await db.get('gameState', 'current')
-      const userSettings = await db.get('settings', 'userSettings')
-      const skills = await db.getAll('skills')
-      const shopItems = await db.getAll('shop')
-      const events = await db.getAll('events')
-      const achievements = await db.getAll('achievements')
-      const dailyTasks = await db.getAll('dailyTasks')
-      const notifications = await db.getAll('notifications')
-      const pets = await db.getAll('pets')
+      // const state = await db.get('gameState', 'current')
+      // const userSettings = await db.get('settings', 'userSettings')
+      // const skills = await db.getAll('skills')
+      // const shopItems = await db.getAll('shop')
+      // const events = await db.getAll('events')
+      // const achievements = await db.getAll('achievements')
+      // const dailyTasks = await db.getAll('dailyTasks')
+      // const notifications = await db.getAll('notifications')
+      // const pets = await db.getAll('pets')
+      // const exploration = await db.getAll('exploration')
+      // const equipment = await db.getAll('equipment')
       // 组织导出数据
       const exportData = {
         version: DB_VERSION,
         timestamp: new Date().getTime(),
-        gameState: state,
-        settings: userSettings,
-        skills,
-        shop: shopItems,
-        events,
-        achievements,
-        dailyTasks,
-        notifications,
-        pets
+        gameState: await db.get('gameState', 'current'),
+        settings: await db.get('settings', 'userSettings'),
+        skills: await db.getAll('skills'),
+        shop: await db.getAll('shop'),
+        events: await db.getAll('events'),
+        achievements: await db.getAll('achievements'),
+        dailyTasks: await db.getAll('dailyTasks'),
+        notifications: await db.getAll('notifications'),
+        pets: await db.getAll('pets'),
+        exploration: await db.getAll('exploration'),
+        equipment: await db.getAll('equipment')
       }
       return {
         success: true,
@@ -225,6 +229,20 @@ export const useGameStore = defineStore('game', () => {
         const tx = db.transaction('pets', 'readwrite')
         const store = tx.objectStore('pets')
         await Promise.all(importData.pets.map(pet => store.put(pet)))
+        await tx.done
+      }
+      // 导入装备数据
+      if (importData.equipment && importData.equipment.length > 0) {
+        const tx = db.transaction('equipment', 'readwrite')
+        const store = tx.objectStore('equipment')
+        await Promise.all(importData.equipment.map(equipment => store.put(equipment)))
+        await tx.done
+      }
+      // 导入探索数据
+      if (importData.exploration && importData.exploration.length > 0) {
+        const tx = db.transaction('exploration', 'readwrite')
+        const store = tx.objectStore('exploration')
+        await Promise.all(importData.exploration.map(exploration => store.put(exploration)))
         await tx.done
       }
       return {

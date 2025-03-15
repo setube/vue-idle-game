@@ -281,6 +281,7 @@ export const useDailyTaskStore = defineStore('dailyTasks', () => {
     pendingDailyTasks,
     completedDailyTasks,
     lastRefreshTime,
+    saveDailyTasks,
     initialize,
     updateTaskProgress,
     claimTaskReward,

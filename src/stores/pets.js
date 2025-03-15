@@ -266,6 +266,7 @@ export const usePetStore = defineStore('pets', () => {
     getRarityName,
     getPetTypeName,
     availablePets,
-    releasePet
+    releasePet,
+    savePets
   }
 })

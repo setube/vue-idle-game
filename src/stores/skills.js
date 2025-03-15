@@ -212,6 +212,7 @@ export const useSkillStore = defineStore('skills', () => {
     applySkillsToEnergyCost,
     getEnergyRegenerationRate,
     initialize,
-    loadSkills
+    loadSkills,
+    saveSkills
   }
 })

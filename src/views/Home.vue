@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, onUnmounted, onActivated } from 'vue'
-import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useSkillStore } from '../stores/skills'
 import { useShopStore } from '../stores/shop'
@@ -11,7 +10,6 @@ import { useNotificationStore } from '../stores/notifications'
 import { usePetStore } from '../stores/pets'
 import { showDialog, showToast } from 'vant'
 
-const router = useRouter()
 const gameStore = useGameStore()
 const shopStore = useShopStore()
 const skillStore = useSkillStore()

@@ -381,6 +381,7 @@ export const useAchievementStore = defineStore('achievements', () => {
     initialize,
     loadAchievements,
     loadStats,
-    getCurrentLevel
+    getCurrentLevel,
+    saveStats
   }
 })

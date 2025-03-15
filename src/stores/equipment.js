@@ -40,10 +40,8 @@ export const useEquipmentStore = defineStore('equipment', () => {
   const initialize = async () => {
     try {
       const gameStore = useGameStore()
-      const db = await openDB(gameStore.DB_NAME, gameStore.DB_VERSION, (db, oldVersion) => {
-        // 使用共享的数据库初始化函数
-        initDatabase(db, oldVersion, gameStore.DB_VERSION)
-      })
+      // 使用共享的数据库初始化函数
+      const db = await openDB(gameStore.DB_NAME, gameStore.DB_VERSION, (db, oldVersion) => initDatabase(db, oldVersion, gameStore.DB_VERSION))
       // 从数据库加载装备
       const savedEquipments = await db.getAll('equipment')
       if (savedEquipments && savedEquipments.length > 0) {
@@ -261,9 +259,7 @@ export const useEquipmentStore = defineStore('equipment', () => {
       if (equipment && equipment.stats) {
         // 累加属性值
         for (const [stat, value] of Object.entries(equipment.stats)) {
-          if (stats[stat] !== undefined) {
-            stats[stat] += value
-          }
+          if (stats[stat] !== undefined) stats[stat] += value
         }
       }
     }
